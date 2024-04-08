@@ -20,7 +20,7 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data/
     environment:
-      - DB_USER=developer
+      - DB_USER=postgres
       - DB_PASSWORD=postgres
       - DB_NAME=effective
     ports:

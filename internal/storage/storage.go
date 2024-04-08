@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	_ "github.com/lib/pq"
 )
 
 func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {

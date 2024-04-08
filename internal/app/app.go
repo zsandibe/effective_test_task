@@ -29,13 +29,15 @@ func Start() error {
 	}
 
 	repository := repository.NewRepository(db)
+	logger.Info("Repository loaded successfully")
 
 	service := service.NewService(repository)
+	logger.Info("Service loaded successfully")
 
 	delivery := v1.NewHandler(service)
+	logger.Info("Delivery loaded successfully")
 
 	server := server.NewServer(cfg, delivery.Routes())
-
 	go func() {
 		if err := server.Run(); err != nil {
 			logger.Error("failed to start server: %v", err)

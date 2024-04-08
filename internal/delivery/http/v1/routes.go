@@ -10,11 +10,11 @@ func (h *Handler) Routes() *gin.Engine {
 	{
 		car := api.Group("/car")
 		{
-			car.GET("/:id")
-			car.POST("/add")
+			car.GET("/:id", h.GetCarById)
+			car.POST("/add", h.AddCar)
 			car.DELETE("/delete/:id")
-			car.GET("/list")
-			car.PUT("/update/:id")
+			car.GET("/list", h.GetCarsList)
+			car.PUT("/update/:id", h.UpdateCarInfo)
 		}
 
 	}

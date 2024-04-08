@@ -6,7 +6,7 @@ import (
 )
 
 func (s *serviceCar) AddCar(ctx context.Context, car domain.Car) error {
-	checkedCar, err := getCarInfoByRegNum(car.RegNum)
+	checkedCar, err := getCarInfoByRegNum(car.RegNum) // TODO: change to getInfoFromApi func
 	if err != nil {
 		return err
 	}
@@ -23,4 +23,8 @@ func (s *serviceCar) GetCarsList(ctx context.Context, params domain.CarsListPara
 
 func (s *serviceCar) UpdateCarInfo(ctx context.Context, carID int, params domain.CarDataUpdatingRequest) error {
 	return s.repo.UpdateCarInfo(ctx, carID, params)
+}
+
+func (s *serviceCar) DeleteCarById(ctx context.Context, id int) error {
+	return s.repo.DeleteCarById(ctx, id)
 }

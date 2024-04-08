@@ -7,7 +7,7 @@ type CarsListParams struct {
 	Year      int    `form:"year"`
 	Limit     int    `form:"limit"`
 	Offset    int    `form:"offset"`
-	Owner
+	OwnerRequest
 }
 
 type RegNumberRequest struct {
@@ -19,5 +19,5 @@ type CarDataUpdatingRequest struct {
 	Mark      string `json:"mark"`
 	Model     string `json:"model"`
 	Year      int    `json:"year"`
-	Owner
+	Owner     Owner  `json:"owner"`
 }

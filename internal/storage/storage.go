@@ -12,6 +12,7 @@ import (
 )
 
 func NewPostgresDB(cfg *config.Config) (*sql.DB, error) {
+	logger.Debug("NewPostgresDB func")
 	connString := fmt.Sprintf(
 		"postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		cfg.Postgres.User,

@@ -4,7 +4,6 @@ import (
 	"context"
 	"effective/config"
 	"effective/pkg/logger"
-	"fmt"
 	"net/http"
 	"time"
 )
@@ -27,8 +26,7 @@ func NewServer(cfg *config.Config, handler http.Handler) *Server {
 }
 
 func (s *Server) Run() error {
-	fmt.Println("OK")
-	logger.Info("Starting server on  %s", s.httpServer.Addr)
+	logger.Info("Starting server on: ", s.httpServer.Addr)
 	if err := s.httpServer.ListenAndServe(); err != nil {
 		return err
 	}

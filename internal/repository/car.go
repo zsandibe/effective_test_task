@@ -45,31 +45,31 @@ func (r *repositoryPostgres) GetCarsList(ctx context.Context, params domain.Cars
 	)
 
 	if params.RegNumber != "" {
-		where = append(where, "reg_num = $1")
+		where = append(where, "reg_num = $")
 		args = append(args, params.RegNumber)
 	}
 	if params.Mark != "" {
-		where = append(where, "mark = $2")
+		where = append(where, "mark = $")
 		args = append(args, params.Mark)
 	}
 	if params.Model != "" {
-		where = append(where, "model = $3")
+		where = append(where, "model = $")
 		args = append(args, params.Model)
 	}
 	if params.Year > 0 {
-		where = append(where, "year = $4")
+		where = append(where, "year = $")
 		args = append(args, params.Year)
 	}
 	if params.Name != "" {
-		where = append(where, "owner_name = $5")
+		where = append(where, "owner_name = $")
 		args = append(args, params.Name)
 	}
 	if params.Surname != "" {
-		where = append(where, "owner_surname = $6")
+		where = append(where, "owner_surname = $")
 		args = append(args, params.Surname)
 	}
 	if params.Patronymic != "" {
-		where = append(where, "owner_patronymic = $7")
+		where = append(where, "owner_patronymic = $")
 		args = append(args, params.Patronymic)
 	}
 
@@ -88,15 +88,19 @@ func (r *repositoryPostgres) GetCarsList(ctx context.Context, params domain.Cars
 		args = append(args, params.Offset)
 	}
 
-	sql = "SELECT * FROM cars" + sql + (strings.Join(orderBy, ", "))
-	rows, err := r.db.QueryContext(ctx, sql, args...)
-	if err != nil {
-		return nil, err
+	for i := range args {
+		sql = strings.Replace(sql, "$", fmt.Sprintf("$%d", i+1), -1)
 	}
 
+	sql = "SELECT * FROM cars" + sql + (strings.Join(orderBy, ", "))
+
+	rows, err := r.db.QueryContext(ctx, sql, args...)
+	if err != nil {
+
+		return nil, err
+	}
 	defer rows.Close()
 	for rows.Next() {
-
 		var car domain.Car
 		err := rows.Scan(&car.Id, &car.RegNum, &car.Mark, &car.Model, &car.Year,
 			&car.Owner.Name, &car.Owner.Surname, &car.Owner.Patronymic)
@@ -114,56 +118,34 @@ func (r *repositoryPostgres) GetCarsList(ctx context.Context, params domain.Cars
 }
 
 func (r *repositoryPostgres) UpdateCarInfo(ctx context.Context, carID int, params domain.CarDataUpdatingRequest) error {
-	sql := `UPDATE cars SET`
 
-	setValues := []string{}
-	args := []interface{}{}
-	fmt.Println(params)
-	if params.RegNumber != "" {
-		setValues = append(setValues, " reg_num = $1")
-		args = append(args, params.RegNumber)
-	}
-	if params.Mark != "" {
-		setValues = append(setValues, " mark = $2")
-		args = append(args, params.Mark)
-	}
-	if params.Model != "" {
-		setValues = append(setValues, " model = $3")
-		args = append(args, params.Model)
-	}
-	if params.Year > 0 {
-		setValues = append(setValues, " year = $4")
-		args = append(args, params.Year)
-	}
-	if params.Owner.Name != "" {
-		setValues = append(setValues, " owner_name = $5")
-		args = append(args, params.Owner.Name)
-	}
-	if params.Owner.Surname != "" {
-		setValues = append(setValues, " owner_surname = $6")
-		args = append(args, params.Owner.Surname)
-	}
-	if params.Owner.Patronymic != "" {
-		setValues = append(setValues, " owner_patronymic = $7")
-		args = append(args, params.Owner.Patronymic)
-	}
-
-	args = append(args, carID) // Add carID as the last argument for the WHERE clause
-	sql += strings.Join(setValues, ",\n") + ` WHERE id = $` + strconv.Itoa(len(args))
-	fmt.Println(sql)
-	result, err := r.db.ExecContext(ctx, sql, args...)
+	query := `
+	UPDATE cars SET
+	reg_num = COALESCE(NULLIF($1, ''), reg_num),
+	mark = COALESCE(NULLIF($2, ''), mark),
+	model = COALESCE(NULLIF($3, ''), model),
+	year = COALESCE(NULLIF($4, 0), year),
+	owner_name = COALESCE(NULLIF($5, ''), owner_name),
+	owner_surname = COALESCE(NULLIF($6, ''), owner_surname),
+	owner_patronymic = COALESCE(NULLIF($7, ''), owner_patronymic)
+	WHERE id = $8
+	`
+	_, err := r.db.ExecContext(ctx, query,
+		params.RegNumber, params.Mark, params.Model, params.Year, params.Owner.Name, params.Owner.Surname, params.Owner.Patronymic, carID)
 	if err != nil {
 		return err
 	}
 
-	rowsAffected, err := result.RowsAffected()
+	return nil
+}
+
+func (r *repositoryPostgres) DeleteCarById(ctx context.Context, id int) error {
+	query := `
+		DELETE FROM cars WHERE id = $1
+	`
+	_, err := r.db.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
-
-	if rowsAffected == 0 {
-		return fmt.Errorf("no rows updated for car with ID %d", carID)
-	}
-
 	return nil
 }

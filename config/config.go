@@ -8,6 +8,11 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
+type Api struct {
+	Url string `envconfig:"API_URL" required:"true"`
+	Key string `envconfig:"API_KEY" required:"true"`
+}
+
 type Server struct {
 	Host string `envconfig:"SERVER_HOST" required:"true"`
 	Port string `envconfig:"SERVER_PORT" required:"true"`
@@ -24,6 +29,7 @@ type Postgres struct {
 type Config struct {
 	Postgres Postgres
 	Server   Server
+	Api      Api
 }
 
 func NewConfig(path string) (*Config, error) {
